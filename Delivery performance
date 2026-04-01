@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delivery Performance Metrics – Feb '26</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080C18;--surface:#0E1525;--card:#111928;--border:#1E2A42;--blue:#0A6CF5;--teal:#00D4CC;--gold:#F5A623;--green:#18E07F;--amber:#FFBA3B;--red:#FF4D6A;--text:#EDF0F8;--muted:#6B7A9A;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;font-size:14px;min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");}
+
+/* NAV */
+.topnav{position:sticky;top:0;z-index:100;background:rgba(8,12,24,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:54px;gap:8px;}
+.nav-brand{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;white-space:nowrap;padding:14px 0;letter-spacing:.04em;}
+.nav-brand span{color:var(--teal);}
+.page-tabs{display:flex;}
+.page-tab{padding:14px 18px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:color .2s;border-bottom:2px solid transparent;white-space:nowrap;}
+.page-tab.active{color:#fff;border-bottom-color:var(--teal);}
+.slicers-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0;}
+.sl-grp{display:flex;align-items:center;gap:5px;}
+.sl-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);white-space:nowrap;}
+select.sl{background:var(--card);border:1px solid var(--border);color:var(--text);font-family:'Manrope',sans-serif;font-size:11px;padding:5px 26px 5px 9px;border-radius:7px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5L9 0z' fill='%236B7A9A'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer;transition:border-color .2s;min-width:120px;}
+select.sl:focus{outline:none;border-color:var(--teal);}
+select.sl.view-sl{min-width:150px;border-color:rgba(0,212,204,.5);color:var(--teal);font-weight:700;}
+.sl-div{width:1px;height:18px;background:var(--border);margin:0 2px;}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:32px 28px 64px;}
+.page.active{display:block;}
+
+/* FILTER BAR */
+.fbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;background:rgba(0,212,204,.04);border:1px solid rgba(0,212,204,.14);border-radius:8px;margin-bottom:22px;font-size:11px;color:var(--muted);}
+.fbar.hidden{display:none;}
+.fchip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;background:rgba(10,108,245,.12);border:1px solid rgba(10,108,245,.25);border-radius:99px;color:var(--text);font-size:10px;}
+.fbar-clear{margin-left:auto;cursor:pointer;color:var(--teal);font-size:10px;}
+
+/* HEADER */
+.rpt-hdr{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:28px;gap:20px;flex-wrap:wrap;}
+.hdr-eye{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin-bottom:7px;}
+.hdr-title{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1.1;background:linear-gradient(135deg,#fff 25%,var(--teal) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdr-meta{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+.hdr-meta span{font-size:11px;color:var(--muted);}
+.hdr-meta span b{color:var(--text);}
+.hdr-badges{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;}
+.hbadge{border-radius:10px;padding:12px 18px;text-align:center;min-width:110px;}
+.hbadge .bv{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;display:block;line-height:1;}
+.hbadge .bl{font-size:9px;color:rgba(255,255,255,.7);margin-top:3px;letter-spacing:.04em;}
+
+/* SECTION */
+.sec{margin-bottom:28px;}
+.sec-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:12px;padding-left:9px;border-left:3px solid var(--blue);}
+
+/* GRIDS */
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:1100px){.g5{grid-template-columns:repeat(3,1fr);}.g4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){.g5,.g4,.g3,.g2{grid-template-columns:1fr 1fr;}}
+@media(max-width:460px){.g5,.g4,.g3,.g2{grid-template-columns:1fr;}}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 15px 14px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+.card:hover{border-color:rgba(10,108,245,.4);transform:translateY(-2px);}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc,var(--blue));border-radius:12px 12px 0 0;}
+.card.g{--acc:var(--green)}.card.t{--acc:var(--teal)}.card.a{--acc:var(--amber)}.card.r{--acc:var(--red)}.card.go{--acc:var(--gold)}.card.b{--acc:var(--blue)}
+.clbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;}
+.cval{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1;margin-bottom:3px;transition:color .3s;}
+.cval .u{font-size:13px;font-weight:600;color:var(--muted);}
+.csub{font-size:11px;color:var(--muted);}
+.csub b{color:var(--text);}
+.prog{margin-top:9px;}
+.ptrack{height:4px;background:var(--border);border-radius:99px;overflow:hidden;}
+.pfill{height:100%;border-radius:99px;background:var(--acc,var(--blue));transition:width .8s cubic-bezier(.25,.8,.25,1);}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:.04em;}
+.pill.g{background:rgba(24,224,127,.12);color:var(--green);}
+.pill.a{background:rgba(255,186,59,.12);color:var(--amber);}
+.pill.r{background:rgba(255,77,106,.12);color:var(--red);}
+
+/* WIDE CARD */
+.wcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+
+/* H-BAR */
+.hb{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.hb-l{font-size:10px;color:var(--muted);width:140px;flex-shrink:0;text-align:right;}
+.hb-t{flex:1;height:7px;background:var(--border);border-radius:99px;overflow:hidden;}
+.hb-f{height:100%;border-radius:99px;background:var(--acc,var(--blue));transition:width .8s cubic-bezier(.25,.8,.25,1);}
+.hb-v{font-family:'DM Mono',monospace;font-size:10px;color:var(--text);width:44px;text-align:right;flex-shrink:0;}
+
+/* DONUT */
+.dnut{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.dleg .di{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:10px;}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* INSIGHTS PAGE */
+.ins{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:18px 20px;margin-bottom:12px;border-left:4px solid var(--acc,var(--blue));}
+.ins h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:5px;color:#fff;}
+.ins p{font-size:11px;color:var(--muted);line-height:1.75;}
+.ins p b{color:var(--text);}
+.ins.success{--acc:var(--green)}.ins.warn{--acc:var(--amber)}.ins.risk{--acc:var(--red)}.ins.info{--acc:var(--teal)}.ins.focus{--acc:var(--gold)}
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:800px){.igrid{grid-template-columns:1fr;}}
+
+/* SCORE TABLE */
+.stbl{width:100%;border-collapse:collapse;font-size:11px;}
+.stbl th{padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);border-bottom:1px solid var(--border);font-weight:600;}
+.stbl td{padding:9px 12px;border-bottom:1px solid rgba(30,42,66,.4);}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:rgba(10,108,245,.04);}
+.sbar{display:flex;align-items:center;gap:7px;}
+.sbar-t{flex:1;height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+.sbar-f{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.25,.8,.25,1);}
+
+/* CALLOUT */
+.callout{background:linear-gradient(135deg,rgba(10,108,245,.1),rgba(0,212,204,.06));border:1px solid rgba(0,212,204,.18);border-radius:12px;padding:18px 22px;margin-bottom:22px;}
+.callout h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:7px;}
+.callout p{font-size:11px;color:var(--muted);line-height:1.8;}
+.callout p b{color:var(--text);}
+
+/* RATING */
+.rrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.rrow:last-child{border-bottom:none;}
+.rname{flex:1;font-size:11px;color:var(--text);}
+.rscore{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;width:55px;text-align:right;}
+.rtrack{flex:2;height:7px;background:var(--border);border-radius:99px;overflow:hidden;}
+.rfill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.25,.8,.25,1);}
+.rstatus{width:65px;text-align:right;}
+
+/* OBL ROW */
+.orow{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.orow:last-child{border-bottom:none;}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.anim{animation:fadeUp .35s ease both;}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}.d4{animation-delay:.16s}.d5{animation-delay:.20s}
+
+/* FOOTER */
+.footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.footer span{font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* NA indicator */
+.na{color:var(--muted);font-size:13px;font-weight:500;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div class="nav-brand">⬡ Cognizant <span>DPM</span></div>
+    <div class="page-tabs">
+      <button class="page-tab active" onclick="switchPage(1)">📊 Executive Dashboard</button>
+      <button class="page-tab" onclick="switchPage(2)">💡 Leadership Insights</button>
+    </div>
+  </div>
+  <div class="slicers-row">
+    <!-- VIEW -->
+    <div class="sl-grp"><span class="sl-lbl">View</span>
+      <select class="sl view-sl" id="viewSl" onchange="applyView();renderAll()">
+        <option value="all">🌐 Generic (All)</option>
+        <option value="quality">🔬 Quality</option>
+        <option value="delivery">🚚 Delivery & SLA</option>
+        <option value="customer">⭐ Customer</option>
+        <option value="compliance">📋 Compliance</option>
+        <option value="engineering">⚙️ Engineering</option>
+      </select>
+    </div>
+    <div class="sl-div"></div>
+    <!-- MARKET -->
+    <div class="sl-grp"><span class="sl-lbl">Market</span>
+      <select class="sl" id="mktSl" onchange="renderAll()">
+        <option value="">All Markets</option>
+        <option>3Cloud</option><option>ANZ</option><option>APJ Others</option><option>ASEAN and GCN</option>
+        <option>Belcan</option><option>CE Others</option><option>CMT NA</option><option>DACH</option>
+        <option>EMEA Others</option><option>FSI NA</option><option>GGM Management and Invmt</option>
+        <option>GGM Others</option><option>HEALTH NA</option><option>India</option>
+        <option>Internal</option><option>Japan</option><option>M&A GGM</option>
+        <option>M&A Multimarkets</option><option>M&A NA</option><option>MLEU NA</option>
+        <option>Northern Europe</option><option>Others NA</option><option>RCGTH NA</option>
+        <option>Southern Europe &amp; Middle East</option><option>UK&amp;I</option>
+      </select>
+    </div>
+    <!-- VERTICAL -->
+    <div class="sl-grp"><span class="sl-lbl">Vertical</span>
+      <select class="sl" id="vertSl" onchange="renderAll()">
+        <option value="">All Verticals</option>
+        <option>BFS</option><option>COMM</option><option>GVTSECTOR</option>
+        <option>HEALTHCARE</option><option>INSURANCE</option><option>INTERNAL</option>
+        <option>LSCIENCES</option><option>MLEU</option><option>RETAIL</option>
+        <option>T&H</option><option>TECHNOLOGY</option>
+      </select>
+    </div>
+    <!-- BU -->
+    <div class="sl-grp"><span class="sl-lbl">BU</span>
+      <select class="sl" id="buSl" onchange="renderAll()">
+        <option value="">All BUs</option>
+        <option>ASEAN</option><option>AUSTRALIA</option>
+        <option>Banking &amp; Capital Markets - NA</option><option>Belux</option>
+        <option>BFS-NA</option><option>BFS-UK</option>
+        <option>CG-UK</option><option>CommsMedia-NA</option><option>CommsMedia-UK</option>
+        <option>Consumer NA</option><option>EU-NA</option>
+        <option>Financial Services &amp; FinTech - NA</option>
+        <option>France</option><option>Germany</option><option>Greater China</option>
+        <option>India</option><option>Insurance 1</option><option>Insurance 2</option>
+        <option>Insurance-UK</option><option>Internal</option>
+        <option>Japan</option><option>Life Sciences-NA</option><option>Life Sciences-UK</option>
+        <option>Middle East</option><option>MLEU-UK</option><option>ML-NA</option>
+        <option>Netherlands</option><option>Nordics &amp; Baltics</option>
+        <option>Payer BU</option><option>Provider BU</option>
+        <option>Public Sector-UK</option>
+        <option>Retail NA</option><option>RT&H-UK</option>
+        <option>Switzerland</option>
+        <option>Technology-NA</option><option>Technology-UK</option><option>Transport-UK</option>
+      </select>
+    </div>
+    <!-- SERVICE LINE -->
+    <div class="sl-grp"><span class="sl-lbl">Service Line</span>
+      <select class="sl" id="slSl" onchange="renderAll()">
+        <option value="">All Service Lines</option>
+        <option>CTI</option><option>ENGG. R&amp;D</option><option>EPS</option>
+        <option>IOA</option><option>ISG</option><option>MARKET OWNED</option>
+        <option>MOMENT</option><option>PLATFORM GRP</option><option>SPE</option><option>SPG</option>
+      </select>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     PAGE 1 — EXECUTIVE DASHBOARD
+═══════════════════════════════════════ -->
+<div class="page active" id="page1">
+
+  <div class="fbar hidden" id="fbar">
+    <span>🔍 Active Filters:</span>
+    <span id="fchips"></span>
+    <span class="fbar-clear" onclick="clearFilters()">✕ Clear All</span>
+  </div>
+
+  <header class="rpt-hdr anim">
+    <div>
+      <div class="hdr-eye">⬡ Cognizant · Enterprise Delivery Intelligence</div>
+      <div class="hdr-title">Delivery Performance Metrics</div>
+      <div class="hdr-meta">
+        <span>📅 Period: <b>February 2026</b></span>
+        <span>📌 View: <b id="viewLbl">Generic (All)</b></span>
+        <span id="filterLblHdr" style="color:var(--teal);"></span>
+      </div>
+    </div>
+    <div class="hdr-badges">
+      <div class="hbadge" style="background:linear-gradient(135deg,var(--blue),var(--teal));">
+        <span class="bv" id="hbComposite">78.0%</span><div class="bl">Composite Score</div>
+      </div>
+      <div class="hbadge" style="background:linear-gradient(135deg,#0D4A3A,#18E07F);">
+        <span class="bv" id="hbSOW">97.9%</span><div class="bl">SOW Fulfillment</div>
+      </div>
+      <div class="hbadge" style="background:linear-gradient(135deg,#3A2A00,var(--gold));">
+        <span class="bv" id="hbPSQ">85.1%</span><div class="bl">PSQ Score</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── GENERIC VIEW ── -->
+  <div id="v-all" class="view-block">
+    <div class="sec">
+      <div class="sec-title">Overall KPI Scorecard</div>
+      <div class="g5">
+        <div class="card g anim d1"><div class="clbl">PSQ Score</div><div class="cval" id="c-psq">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="p-psq" style="width:0%"></div></div></div><div class="csub" style="margin-top:5px;">Green: <b id="c-psqg">–</b> · Red: <b id="c-psqr">–</b></div></div>
+        <div class="card g anim d2"><div class="clbl">SQS Score</div><div class="cval" id="c-sqs">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="p-sqs" style="width:0%"></div></div></div><div class="csub" style="margin-top:5px;">Green: <b id="c-sqsg">–</b> · Red: <b id="c-sqsr">–</b></div></div>
+        <div class="card t anim d3"><div class="clbl">EE Score</div><div class="cval" id="c-ee">–</div><div class="prog"><div class="ptrack"><div class="pfill t" id="p-ee" style="width:0%;--acc:var(--teal)"></div></div></div><div class="csub" style="margin-top:5px;">Engineering Excellence</div></div>
+        <div class="card a anim d4"><div class="clbl">Agile Maturity</div><div class="cval" id="c-agile">–</div><div class="prog"><div class="ptrack"><div class="pfill a" id="p-agile" style="width:0%;--acc:var(--amber)"></div></div></div><div class="csub" style="margin-top:5px;">Agile Score</div></div>
+        <div class="card go anim d5"><div class="clbl">Composite Score</div><div class="cval" id="c-comp">–</div><div class="prog"><div class="ptrack"><div class="pfill go" id="p-comp" style="width:0%;--acc:var(--gold)"></div></div></div><div class="csub" style="margin-top:5px;">QRST: <b id="c-qrst">–</b></div></div>
+      </div>
+    </div>
+
+    <div class="g2" style="margin-bottom:26px;">
+      <div>
+        <div class="sec-title" style="--blue:var(--teal);">Delivery & SLA</div>
+        <div class="g2">
+          <div class="card g anim"><div class="clbl">SOW Fulfillment</div><div class="cval" id="d-sow">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="dp-sow" style="width:0%"></div></div></div></div>
+          <div class="card g anim d1"><div class="clbl">CDO OnTime</div><div class="cval">99.5<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill g" style="width:99.5%"></div></div></div></div>
+          <div class="card t anim d2"><div class="clbl">CDO Accuracy</div><div class="cval">99.0<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill t" style="width:99%;--acc:var(--teal)"></div></div></div></div>
+          <div class="card a anim d3"><div class="clbl">Escalations</div><div class="cval" style="color:var(--amber);">2</div><div class="csub" style="margin-top:5px;"><span class="pill g">Managed</span></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="sec-title" style="--blue:var(--gold);">Customer Satisfaction</div>
+        <div class="g2">
+          <div class="card go anim"><div class="clbl">PCSAT Score</div><div class="cval">4.68<span class="u">/5</span></div><div class="csub" style="margin-top:5px;">Response Rate: <b>61.4%</b> ✓</div><div class="csub">Remediation: <b>98.7%</b> · Coverage: <b>12.3%</b></div></div>
+          <div class="card t anim d1"><div class="clbl">NPS Score</div><div class="cval">74.5<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill t" style="width:74.5%;--acc:var(--teal)"></div></div></div><div class="csub" style="margin-top:5px;">Promoters: <b>106</b> · Detractors: <b>4</b></div></div>
+          <div class="card g anim d2"><div class="clbl">OCS Average</div><div class="cval">4.66<span class="u">/5</span></div><div class="csub" style="margin-top:5px;">Highly Satisfied: <b>69.8%</b></div></div>
+          <div class="card a anim d3"><div class="clbl">Overdue Findings</div><div class="cval" style="color:var(--amber);">211</div><div class="csub" style="margin-top:5px;">Total: <b>3,231</b></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MSA + DA + Critical Closure strip -->
+    <div class="sec">
+      <div class="sec-title">MSA Fulfillment · DA Risk · Critical Closure</div>
+      <div class="g4">
+        <div class="card g anim">
+          <div class="clbl">MSA Fulfillment (YTD)</div>
+          <div class="cval" style="color:var(--green);">98.97<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill g" style="width:98.97%"></div></div></div>
+          <div class="csub" style="margin-top:5px;"><span class="pill g">Above Target</span></div>
+        </div>
+        <div class="card a anim d1">
+          <div class="clbl">DA Coverage</div>
+          <div class="cval" style="color:var(--amber);">89.2<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill a" style="width:89.2%;--acc:var(--amber)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Delivery Assurance</div>
+        </div>
+        <div class="card r anim d2">
+          <div class="clbl">DA Risk Remediation</div>
+          <div class="cval" style="color:var(--red);">39.1<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill r" style="width:39.1%;--acc:var(--red)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">43 done · <b>67 open</b> / 110 total</div>
+        </div>
+        <div class="card a anim d3">
+          <div class="clbl">Critical Closure %</div>
+          <div class="cval" style="color:var(--amber);">89.2<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill a" style="width:89.2%;--acc:var(--amber)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Proj: <b>92.8%</b> · Acct: <b>91.9%</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FULL SCORECARD TABLE -->
+    <div class="sec">
+      <div class="sec-title">Full Metrics Scorecard</div>
+      <div class="wcard">
+        <table class="stbl" id="scoreTable">
+          <thead><tr><th>Metric</th><th>Category</th><th>Value</th><th style="width:180px;">Progress</th><th>Status</th></tr></thead>
+          <tbody id="scoreTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /v-all -->
+
+  <!-- ── QUALITY VIEW ── -->
+  <div id="v-quality" class="view-block" style="display:none;">
+    <div class="sec"><div class="sec-title">🔬 Quality Deep Dive</div>
+      <div class="g4">
+        <div class="card g anim"><div class="clbl">PSQ Score</div><div class="cval" id="q-psq">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="qp-psq" style="width:0%"></div></div></div><div class="csub" style="margin-top:6px;">Green: <b id="q-psqg">–</b> · Red: <b id="q-psqr">–</b></div></div>
+        <div class="card g anim d1"><div class="clbl">SQS Score</div><div class="cval" id="q-sqs">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="qp-sqs" style="width:0%"></div></div></div><div class="csub" style="margin-top:6px;">Green: <b id="q-sqsg">–</b> · Red: <b id="q-sqsr">–</b></div></div>
+        <div class="card t anim d2"><div class="clbl">EE Score</div><div class="cval" id="q-ee">–</div><div class="prog"><div class="ptrack"><div class="pfill t" id="qp-ee" style="width:0%;--acc:var(--teal)"></div></div></div></div>
+        <div class="card a anim d3"><div class="clbl">Agile Maturity</div><div class="cval" id="q-agile">–</div><div class="prog"><div class="ptrack"><div class="pfill a" id="qp-agile" style="width:0%;--acc:var(--amber)"></div></div></div></div>
+      </div>
+    </div>
+    <div class="sec"><div class="sec-title">Quality Benchmarks</div>
+      <div class="wcard">
+        <div class="hb" style="--acc:var(--green);"><div class="hb-l">PSQ Score</div><div class="hb-t"><div class="hb-f" id="qhb-psq" style="width:0%"></div></div><div class="hb-v" id="qhv-psq">–</div></div>
+        <div class="hb" style="--acc:var(--teal);"><div class="hb-l">SQS Score</div><div class="hb-t"><div class="hb-f" id="qhb-sqs" style="width:0%;--acc:var(--teal)"></div></div><div class="hb-v" id="qhv-sqs">–</div></div>
+        <div class="hb" style="--acc:var(--gold);"><div class="hb-l">EE Score</div><div class="hb-t"><div class="hb-f" id="qhb-ee" style="width:0%;--acc:var(--gold)"></div></div><div class="hb-v" id="qhv-ee">–</div></div>
+        <div class="hb" style="--acc:var(--amber);"><div class="hb-l">Agile Maturity</div><div class="hb-t"><div class="hb-f" id="qhb-agile" style="width:0%;--acc:var(--amber)"></div></div><div class="hb-v" id="qhv-agile">–</div></div>
+        <div class="hb" style="--acc:var(--blue);"><div class="hb-l">QRST Score</div><div class="hb-t"><div class="hb-f" id="qhb-qrst" style="width:0%;--acc:var(--blue)"></div></div><div class="hb-v" id="qhv-qrst">–</div></div>
+      </div>
+    </div>
+  </div><!-- /v-quality -->
+
+  <!-- ── DELIVERY VIEW ── -->
+  <div id="v-delivery" class="view-block" style="display:none;">
+    <div class="sec"><div class="sec-title">🚚 Delivery & SLA Metrics</div>
+      <div class="g4">
+        <div class="card g anim"><div class="clbl">SOW Fulfillment</div><div class="cval" id="dv-sow">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="dvp-sow" style="width:0%"></div></div></div></div>
+        <div class="card g anim d1"><div class="clbl">CDO OnTime</div><div class="cval">99.5<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill g" style="width:99.5%"></div></div></div></div>
+        <div class="card t anim d2"><div class="clbl">CDO Accuracy</div><div class="cval">99.0<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill t" style="width:99%;--acc:var(--teal)"></div></div></div></div>
+        <div class="card a anim d3"><div class="clbl">Escalations</div><div class="cval" style="color:var(--amber);">2</div><div class="csub" style="margin-top:5px;"><span class="pill g">Under Control</span></div></div>
+      </div>
+    </div>
+    <div class="sec"><div class="sec-title">Engineering & Automation</div>
+      <div class="g3">
+        <div class="card t anim"><div class="clbl">InSprint Automation</div><div class="cval" id="dv-inspr">–</div><div class="prog"><div class="ptrack"><div class="pfill t" id="dvp-inspr" style="width:0%;--acc:var(--teal)"></div></div></div></div>
+        <div class="card b anim d1"><div class="clbl">Codenizant Score</div><div class="cval" id="dv-coden">–</div><div class="prog"><div class="ptrack"><div class="pfill b" id="dvp-coden" style="width:0%;--acc:var(--blue)"></div></div></div></div>
+        <div class="card go anim d2"><div class="clbl">QRST Score</div><div class="cval" id="dv-qrst">–</div><div class="prog"><div class="ptrack"><div class="pfill go" id="dvp-qrst" style="width:0%;--acc:var(--gold)"></div></div></div></div>
+      </div>
+    </div>
+  </div><!-- /v-delivery -->
+
+  <!-- ── CUSTOMER VIEW ── -->
+  <div id="v-customer" class="view-block" style="display:none;">
+    <!-- PCSAT Full Breakdown -->
+    <div class="sec"><div class="sec-title">⭐ PCSAT — Project Customer Satisfaction</div>
+      <div class="g4">
+        <div class="card go anim">
+          <div class="clbl">PCSAT Score</div>
+          <div class="cval">4.68<span class="u">/5</span></div>
+          <div class="csub" style="margin-top:5px;">Responses: <b>129</b> / 210 initiated</div>
+          <div class="csub">Satisfied: <b>106</b> · Total: <b>139</b></div>
+        </div>
+        <div class="card g anim d1">
+          <div class="clbl">Response Rate <span style="color:var(--teal);font-size:9px;">Target 60%</span></div>
+          <div class="cval" style="color:var(--green);">61.4<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill g" style="width:61.4%"></div></div></div>
+          <div class="csub" style="margin-top:5px;"><span class="pill g">✓ Above Target</span></div>
+        </div>
+        <div class="card a anim d2">
+          <div class="clbl">Project Coverage <span style="color:var(--amber);font-size:9px;">Target 98%</span></div>
+          <div class="cval" style="color:var(--amber);">12.3<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill a" style="width:12.3%;--acc:var(--amber)"></div></div></div>
+          <div class="csub" style="margin-top:5px;"><span class="pill r">Far Below Target</span></div>
+        </div>
+        <div class="card g anim d3">
+          <div class="clbl">Remediation Rate <span style="color:var(--green);font-size:9px;">Target 100%</span></div>
+          <div class="cval" style="color:var(--green);">98.7<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill g" style="width:98.7%"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Eligible: <b>152</b> · Done: <b>150</b></div>
+        </div>
+      </div>
+    </div>
+    <!-- Sentiment breakdown -->
+    <div class="sec"><div class="sec-title">PCSAT Sentiment & NPS</div>
+      <div class="g3">
+        <div class="card go anim">
+          <div class="clbl">Highly Satisfied</div>
+          <div class="cval" style="color:var(--gold);">69.8<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill go" style="width:69.8%;--acc:var(--gold)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Count: <b>97</b> respondents</div>
+        </div>
+        <div class="card t anim d1">
+          <div class="clbl">NPS Score</div>
+          <div class="cval">74.5<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill t" style="width:74.5%;--acc:var(--teal)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Promoters: <b>106</b> · Detractors: <b>4</b> · Passives: <b>27</b></div>
+        </div>
+        <div class="card g anim d2">
+          <div class="clbl">OCS Average</div>
+          <div class="cval">4.66<span class="u">/5</span></div>
+          <div class="csub" style="margin-top:5px;">Projects improving: <b>70</b></div>
+          <div class="csub">Projects dropping: <b>2.6%</b></div>
+        </div>
+      </div>
+    </div>
+    <!-- SOW & Closure context -->
+    <div class="sec"><div class="sec-title">SOW & Findings Context</div>
+      <div class="g3">
+        <div class="card g anim"><div class="clbl">SOW Fulfillment</div><div class="cval" id="cv-sow">–</div><div class="prog"><div class="ptrack"><div class="pfill g" id="cvp-sow" style="width:0%"></div></div></div></div>
+        <div class="card a anim d1"><div class="clbl">Overdue Findings</div><div class="cval" style="color:var(--amber);">211</div><div class="csub" style="margin-top:5px;">Closed Beyond SLA: <b>138</b></div></div>
+        <div class="card g anim d2"><div class="clbl">Critical Closure %</div><div class="cval">89.2<span class="u">%</span></div><div class="prog"><div class="ptrack"><div class="pfill g" style="width:89.2%"></div></div></div><div class="csub" style="margin-top:5px;">2,882 closed of 3,231 total</div></div>
+      </div>
+    </div>
+  </div><!-- /v-customer -->
+
+  <!-- ── COMPLIANCE VIEW ── -->
+  <div id="v-compliance" class="view-block" style="display:none;">
+
+    <!-- NEW: MSA + DA + Critical Closure -->
+    <div class="sec"><div class="sec-title">📑 MSA Fulfillment · DA Risk · Critical Closure</div>
+      <div class="g4">
+        <div class="card g anim">
+          <div class="clbl">MSA Fulfillment (YTD)</div>
+          <div class="cval" style="color:var(--green);">98.97<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill g" style="width:98.97%"></div></div></div>
+          <div class="csub" style="margin-top:5px;"><span class="pill g">Above Target</span></div>
+        </div>
+        <div class="card a anim d1">
+          <div class="clbl">DA Coverage</div>
+          <div class="cval" style="color:var(--amber);">89.2<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill a" style="width:89.2%;--acc:var(--amber)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Delivery Assurance coverage</div>
+        </div>
+        <div class="card r anim d2">
+          <div class="clbl">DA Risk Remediation</div>
+          <div class="cval" style="color:var(--red);">39.1<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill r" style="width:39.1%;--acc:var(--red)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">43 remediated · <b>67 open</b> · 110 total</div>
+        </div>
+        <div class="card a anim d3">
+          <div class="clbl">Critical Closure %</div>
+          <div class="cval" style="color:var(--amber);">89.2<span class="u">%</span></div>
+          <div class="prog"><div class="ptrack"><div class="pfill a" style="width:89.2%;--acc:var(--amber)"></div></div></div>
+          <div class="csub" style="margin-top:5px;">Project: <b>92.8%</b> · Account: <b>91.9%</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DA Risk Detail -->
+    <div class="sec"><div class="sec-title">DA Risk Breakdown</div>
+      <div class="g3">
+        <div class="card r anim">
+          <div class="clbl">Risks Without Mitigation</div>
+          <div class="cval" style="color:var(--red);font-size:22px;">67</div>
+          <div class="csub" style="margin-top:5px;"><span class="pill r">Unmitigated</span></div>
+        </div>
+        <div class="card g anim d1">
+          <div class="clbl">Risks With Mitigation</div>
+          <div class="cval" style="color:var(--green);font-size:22px;">43</div>
+          <div class="csub" style="margin-top:5px;"><span class="pill g">Remediated</span></div>
+        </div>
+        <div class="card b anim d2">
+          <div class="clbl">DA Total Risks</div>
+          <div class="cval" style="font-size:22px;">110</div>
+          <div class="csub" style="margin-top:5px;">Remediation rate: <b>39.1%</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Obligations -->
+    <div class="sec"><div class="sec-title">📋 Compliance & Obligations</div>
+      <div class="g4">
+        <div class="card b anim"><div class="clbl">Total Obligations</div><div class="cval" style="font-size:20px;">31,651</div></div>
+        <div class="card g anim d1"><div class="clbl">Approved &amp; Met</div><div class="cval" style="color:var(--green);font-size:20px;">25,028</div><div class="csub" style="margin-top:5px;"><span class="pill g">79.1% of total</span></div></div>
+        <div class="card r anim d2"><div class="clbl">Penalty Not Met</div><div class="cval" style="color:var(--red);font-size:20px;">267</div><div class="csub" style="margin-top:5px;"><span class="pill r">Escalation Risk</span></div></div>
+        <div class="card a anim d3"><div class="clbl">CLM Pending</div><div class="cval" style="color:var(--amber);font-size:20px;">225</div><div class="csub" style="margin-top:5px;">CLM Approved: <b>6,071</b></div></div>
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:26px;">
+      <div class="wcard">
+        <div class="clbl" style="margin-bottom:12px;">Obligations Breakdown</div>
+        <div class="orow"><span style="font-size:11px;">Total Obligations</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);">31,651</span></div>
+        <div class="orow"><span style="font-size:11px;">Approved &amp; Met</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--green);">25,028</span></div>
+        <div class="orow"><span style="font-size:11px;">Approved &amp; Not Met</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--red);">327</span></div>
+        <div class="orow"><span style="font-size:11px;">Non-Penalty Not Met</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);">318</span></div>
+        <div class="orow"><span style="font-size:11px;">CLM Approved</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);">6,071</span></div>
+        <div class="orow"><span style="font-size:11px;">CLM Pending</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--amber);">225</span></div>
+      </div>
+      <div class="wcard">
+        <div class="clbl" style="margin-bottom:12px;">Audit Findings Status</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;text-align:center;background:rgba(24,224,127,.07);border-radius:8px;padding:12px;">
+            <div class="clbl">Closed</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--green);">2,882</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(255,186,59,.07);border-radius:8px;padding:12px;">
+            <div class="clbl">Overdue</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--amber);">211</div>
+          </div>
+          <div style="flex:1;text-align:center;background:rgba(10,108,245,.07);border-radius:8px;padding:12px;">
+            <div class="clbl">Total</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--blue);">3,231</div>
+          </div>
+        </div>
+        <div class="ptrack" style="height:7px;"><div class="pfill g" style="width:89.2%"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:5px;text-align:center;">89.2% Overall Closure · Project 92.8% · Account 91.9%</div>
+      </div>
+    </div>
+  </div><!-- /v-compliance -->
+
+  <!-- ── ENGINEERING VIEW ── -->
+  <div id="v-engineering" class="view-block" style="display:none;">
+    <div class="sec"><div class="sec-title">⚙️ Engineering Metrics</div>
+      <div class="g4">
+        <div class="card t anim"><div class="clbl">EE Score</div><div class="cval" id="ev-ee">–</div><div class="prog"><div class="ptrack"><div class="pfill t" id="evp-ee" style="width:0%;--acc:var(--teal)"></div></div></div></div>
+        <div class="card a anim d1"><div class="clbl">Agile Maturity</div><div class="cval" id="ev-agile">–</div><div class="prog"><div class="ptrack"><div class="pfill a" id="evp-agile" style="width:0%;--acc:var(--amber)"></div></div></div></div>
+        <div class="card t anim d2"><div class="clbl">InSprint Automation</div><div class="cval" id="ev-inspr">–</div><div class="prog"><div class="ptrack"><div class="pfill t" id="evp-inspr" style="width:0%;--acc:var(--teal)"></div></div></div></div>
+        <div class="card b anim d3"><div class="clbl">Codenizant Score</div><div class="cval" id="ev-coden">–</div><div class="prog"><div class="ptrack"><div class="pfill b" id="evp-coden" style="width:0%;--acc:var(--blue)"></div></div></div><div class="csub" style="margin-top:5px;">Green: <b>615</b></div></div>
+      </div>
+    </div>
+    <div class="sec"><div class="sec-title">Engineering Benchmark</div>
+      <div class="wcard">
+        <div class="hb"><div class="hb-l">EE Score</div><div class="hb-t"><div class="hb-f" id="ehb-ee" style="width:0%;--acc:var(--teal)"></div></div><div class="hb-v" id="ehv-ee">–</div></div>
+        <div class="hb"><div class="hb-l">Technical Assessment</div><div class="hb-t"><div class="hb-f" style="width:96.3%;--acc:var(--gold)"></div></div><div class="hb-v">96.3%</div></div>
+        <div class="hb"><div class="hb-l">InSprint Automation</div><div class="hb-t"><div class="hb-f" id="ehb-inspr" style="width:0%;--acc:var(--blue)"></div></div><div class="hb-v" id="ehv-inspr">–</div></div>
+        <div class="hb"><div class="hb-l">Codenizant Score</div><div class="hb-t"><div class="hb-f" id="ehb-coden" style="width:0%;--acc:var(--teal)"></div></div><div class="hb-v" id="ehv-coden">–</div></div>
+        <div class="hb"><div class="hb-l">QRST Score</div><div class="hb-t"><div class="hb-f" id="ehb-qrst" style="width:0%;--acc:var(--green)"></div></div><div class="hb-v" id="ehv-qrst">–</div></div>
+        <div class="hb"><div class="hb-l">Agile Maturity</div><div class="hb-t"><div class="hb-f" id="ehb-agile" style="width:0%;--acc:var(--amber)"></div></div><div class="hb-v" id="ehv-agile">–</div></div>
+      </div>
+    </div>
+  </div><!-- /v-engineering -->
+
+  <footer class="footer">
+    <span>COGNIZANT · DELIVERY PERFORMANCE METRICS · FEB '26</span>
+    <span>DATA: POWER BI SEMANTIC MODEL · LIVE EXTRACT</span>
+    <span>CONFIDENTIAL — INTERNAL USE ONLY</span>
+  </footer>
+</div><!-- /page1 -->
+
+
+<!-- ═══════════════════════════════════════
+     PAGE 2 — LEADERSHIP INSIGHTS
+═══════════════════════════════════════ -->
+<div class="page" id="page2">
+  <header class="rpt-hdr anim">
+    <div>
+      <div class="hdr-eye">⬡ Cognizant · Leadership Intelligence Brief</div>
+      <div class="hdr-title">Executive Insights &<br>Strategic Observations</div>
+      <div class="hdr-meta">
+        <span>📅 Period: <b>February 2026</b></span>
+        <span>👥 Audience: <b>Senior Leadership</b></span>
+        <span>🎯 Scope: <b>Global Delivery Portfolio</b></span>
+      </div>
+    </div>
+    <div class="hdr-badges">
+      <div class="hbadge" style="background:linear-gradient(135deg,var(--blue),var(--teal));">
+        <span class="bv" style="font-size:22px;">78.0%</span><div class="bl">Composite Score</div>
+      </div>
+      <div class="hbadge" style="background:linear-gradient(135deg,rgba(24,224,127,.15),rgba(24,224,127,.04));border:1px solid rgba(24,224,127,.3);">
+        <span class="bv" style="font-size:22px;color:var(--green);">7</span><div class="bl">Above Target</div>
+      </div>
+      <div class="hbadge" style="background:linear-gradient(135deg,rgba(255,186,59,.15),rgba(255,186,59,.04));border:1px solid rgba(255,186,59,.3);">
+        <span class="bv" style="font-size:22px;color:var(--amber);">3</span><div class="bl">Need Attention</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="callout anim">
+    <h3>📌 Executive Summary — February 2026</h3>
+    <p>Cognizant's delivery portfolio for Feb '26 reflects a <b>strong operational posture</b> with 7 of 13 tracked metrics exceeding targets. <b>SOW Fulfillment at 97.9%</b> and <b>CDO delivery OnTime at 99.5%</b> signal exceptional execution discipline. Customer sentiment is positive with <b>NPS at 74.5%</b> and <b>PCSAT at 4.68/5</b>. Three areas require leadership attention: <b>Agile Maturity (66.7%)</b>, <b>Audit Closure gap vs 95% target (89.2%)</b>, and <b>267 penalty obligations remaining unmet</b>.</p>
+  </div>
+
+  <div class="sec anim d1">
+    <div class="sec-title">Leadership Performance Scorecard</div>
+    <div class="wcard">
+      <div class="rrow"><span class="rname">📦 SOW Fulfillment & CDO Delivery</span><div class="rtrack"><div class="rfill" style="width:97.9%;background:var(--green)"></div></div><span class="rscore" style="color:var(--green);">97.9%</span><span class="rstatus"><span class="pill g">Excellent</span></span></div>
+      <div class="rrow"><span class="rname">🔬 Quality — PSQ + SQS Composite</span><div class="rtrack"><div class="rfill" style="width:85.2%;background:var(--green)"></div></div><span class="rscore" style="color:var(--green);">85.2%</span><span class="rstatus"><span class="pill g">Good</span></span></div>
+      <div class="rrow"><span class="rname">⚙️ Engineering Excellence (EE Score)</span><div class="rtrack"><div class="rfill" style="width:92%;background:var(--teal)"></div></div><span class="rscore" style="color:var(--teal);">92.0%</span><span class="rstatus"><span class="pill g">Excellent</span></span></div>
+      <div class="rrow"><span class="rname">⭐ Customer Satisfaction (PCSAT)</span><div class="rtrack"><div class="rfill" style="width:93.6%;background:var(--gold)"></div></div><span class="rscore" style="color:var(--gold);">4.68/5</span><span class="rstatus"><span class="pill g">Good</span></span></div>
+      <div class="rrow"><span class="rname">🔄 Agile Maturity Score</span><div class="rtrack"><div class="rfill" style="width:66.7%;background:var(--amber)"></div></div><span class="rscore" style="color:var(--amber);">66.7%</span><span class="rstatus"><span class="pill a">Monitor</span></span></div>
+      <div class="rrow"><span class="rname">📋 Audit Closure Rate</span><div class="rtrack"><div class="rfill" style="width:89.2%;background:var(--amber)"></div></div><span class="rscore" style="color:var(--amber);">89.2%</span><span class="rstatus"><span class="pill a">Monitor</span></span></div>
+      <div class="rrow"><span class="rname">⚠️ Penalty Obligations Not Met</span><div class="rtrack"><div class="rfill" style="width:15%;background:var(--red)"></div></div><span class="rscore" style="color:var(--red);">267</span><span class="rstatus"><span class="pill r">Watch</span></span></div>
+    </div>
+  </div>
+
+  <div class="sec anim d2">
+    <div class="sec-title">Strategic Insights for Leadership</div>
+    <div class="igrid">
+      <div class="ins success"><h4>✅ Delivery Machine is Firing on All Cylinders</h4><p>With <b>SOW Fulfillment at 97.9%</b> and CDO OnTime at <b>99.5%</b>, delivery execution is best-in-class. The near-zero escalation posture (2 total, none new) demonstrates robust project governance. This benchmark should be preserved and scaled as the portfolio grows.</p></div>
+      <div class="ins success"><h4>✅ Engineering Excellence is a Competitive Differentiator</h4><p>The <b>EE Score of 92%</b> combined with <b>Technical Assessments at 96.3%</b> and InSprint Automation at <b>86.9%</b> signals a maturing engineering culture — above industry norm, positioning Cognizant favorably in renewal and expansion discussions.</p></div>
+      <div class="ins info"><h4>📊 Customer Sentiment is Positive but Coverage Must Scale</h4><p><b>PCSAT at 4.68/5</b> and NPS at <b>74.5%</b> reflect healthy relationships. However, PCSAT coverage is only <b>12.3%</b>. Leadership should prioritize expanding the survey footprint to ensure score representativeness across the full portfolio.</p></div>
+      <div class="ins info"><h4>📈 Quality Scores Solid but Assessment Gaps Are a Latent Risk</h4><p>PSQ and SQS both sit at <b>85%+ green</b>. However, <b>SQS coverage is 50.9%</b> and PBQ coverage at <b>63.8%</b> — nearly half the portfolio is unassessed. Without coverage expansion, published scores may not reflect true portfolio health.</p></div>
+      <div class="ins warn"><h4>⚠️ Agile Maturity Requires Accelerated Investment</h4><p>At <b>66.7%</b>, Agile Maturity is the weakest engineering metric. With project coverage at <b>54.1%</b>, nearly half of active projects aren't yet measured. A targeted coaching and tooling intervention is recommended to reach <b>75% by Q2 FY26</b>.</p></div>
+      <div class="ins warn"><h4>⚠️ Audit Closure Below Target — 211 Overdue Items Demand Action</h4><p>With <b>89.2% closure</b> against a 95% target, there is a <b>5.8pp gap</b> representing 211 overdue items. A structured aging analysis with BU-level accountability and a Q1 closure sprint is recommended immediately.</p></div>
+      <div class="ins risk"><h4>🚨 267 Penalty Obligations Unmet — Financial Exposure</h4><p>This is the most critical risk. <b>267 penalty obligations not met</b> (plus 318 non-penalty) represent financial exposure and potential SLA breach consequences. Immediate escalation to account and delivery leadership with a <b>30-day resolution plan</b> is required.</p></div>
+      <div class="ins focus"><h4>🎯 Composite Score: Headroom to Close the Gap to 82%</h4><p><b>Composite at 78%</b> leaves meaningful headroom. Codenizant at <b>78.0%</b> and QRST at <b>85.2%</b> suggest selective improvement will have outsized impact. Prioritizing the bottom-quartile BUs on Codenizant adoption could push composite above the <b>82% threshold by Q2</b>.</p></div>
+    </div>
+  </div>
+
+  <div class="sec anim d3">
+    <div class="sec-title">Recommended Actions for Leadership</div>
+    <div class="g2">
+      <div>
+        <div class="wcard" style="margin-bottom:12px;">
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--red);margin-bottom:10px;letter-spacing:.05em;">🚨 IMMEDIATE — 30 Days</div>
+          <div class="orow"><span style="font-size:11px;">1. Penalty Obligations Resolution Plan</span><span class="pill r">267 Items</span></div>
+          <div class="orow"><span style="font-size:11px;">2. CLM Pending Clearance Drive</span><span class="pill r">225 Items</span></div>
+          <div class="orow"><span style="font-size:11px;">3. Overdue Audit Findings Sprint</span><span class="pill r">211 Items</span></div>
+        </div>
+        <div class="wcard">
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--amber);margin-bottom:10px;letter-spacing:.05em;">⚠️ SHORT-TERM — 60–90 Days</div>
+          <div class="orow"><span style="font-size:11px;">4. Agile Maturity Coaching Program</span><span class="pill a">66.7% → 75%</span></div>
+          <div class="orow"><span style="font-size:11px;">5. PCSAT Coverage Expansion</span><span class="pill a">12% → 40%</span></div>
+          <div class="orow"><span style="font-size:11px;">6. SQS / PBQ Coverage Drive</span><span class="pill a">50% → 70%</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="wcard" style="margin-bottom:12px;">
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--green);margin-bottom:10px;letter-spacing:.05em;">✅ SUSTAIN — Ongoing</div>
+          <div class="orow"><span style="font-size:11px;">Maintain CDO Delivery Excellence</span><span class="pill g">99.5%</span></div>
+          <div class="orow"><span style="font-size:11px;">Preserve SOW Fulfillment Momentum</span><span class="pill g">97.9%</span></div>
+          <div class="orow"><span style="font-size:11px;">Scale Codenizant Adoption</span><span class="pill g">78% → 85%</span></div>
+        </div>
+        <div class="wcard">
+          <div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--teal);margin-bottom:10px;letter-spacing:.05em;">📈 STRATEGIC TARGETS — H1 FY26</div>
+          <div class="orow"><span style="font-size:11px;">Composite Score Target</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--teal);">78% → 82%</span></div>
+          <div class="orow"><span style="font-size:11px;">Audit Closure Target</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--teal);">89% → 95%</span></div>
+          <div class="orow"><span style="font-size:11px;">Agile Maturity Target</span><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--teal);">67% → 75%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span>COGNIZANT · LEADERSHIP INTELLIGENCE BRIEF · FEB '26</span>
+    <span>PREPARED FOR: SENIOR LEADERSHIP REVIEW</span>
+    <span>CONFIDENTIAL — INTERNAL USE ONLY</span>
+  </footer>
+</div><!-- /page2 -->
+
+<!-- ═══════════ DATA + LOGIC ═══════════ -->
+<script>
+// ── PRE-COMPUTED DATA from Power BI DAX queries ──────────────────────────────
+// Fields: psq, sqs, comp, sow, ee, agile, qrst, coden, inspr, psqg, psqr, sqsg, sqsr
+const ALL = {psq:85.1,sqs:85.2,comp:78.0,sow:97.9,ee:92,agile:66.7,qrst:85.2,coden:78.0,inspr:86.9,psqg:1113,psqr:195,sqsg:1277,sqsr:221};
+
+const BY_MARKET = {
+  "ANZ":{psq:52.6,sqs:80.6,comp:58.3,sow:97.2,ee:33.3,agile:0,qrst:87.5,coden:58.3,inspr:75,psqg:10,psqr:9,sqsg:29,sqsr:7},
+  "ASEAN and GCN":{psq:84.4,sqs:91.7,comp:72.7,sow:99.3,ee:85.7,agile:null,qrst:66.7,coden:72.7,inspr:null,psqg:27,psqr:5,sqsg:33,sqsr:3},
+  "CMT NA":{psq:82.7,sqs:88.9,comp:72.3,sow:98.8,ee:100,agile:100,qrst:100,coden:72.3,inspr:73.8,psqg:67,psqr:14,sqsg:96,sqsr:12},
+  "DACH":{psq:86.0,sqs:90.9,comp:80.0,sow:98.2,ee:100,agile:100,qrst:100,coden:80.0,inspr:null,psqg:49,psqr:8,sqsg:70,sqsr:7},
+  "FSI NA":{psq:90.3,sqs:83.3,comp:85.2,sow:99.4,ee:94.3,agile:0,qrst:75,coden:85.2,inspr:90.2,psqg:280,psqr:30,sqsg:215,sqsr:43},
+  "HEALTH NA":{psq:88.2,sqs:91.7,comp:81.0,sow:98.4,ee:100,agile:null,qrst:100,coden:81.0,inspr:79.5,psqg:179,psqr:24,sqsg:244,sqsr:22},
+  "India":{psq:80.0,sqs:72.4,comp:85.7,sow:97.6,ee:71.4,agile:null,qrst:0,coden:85.7,inspr:null,psqg:12,psqr:3,sqsg:21,sqsr:8},
+  "Internal":{psq:null,sqs:null,comp:null,sow:99.9,ee:null,agile:null,qrst:null,coden:null,inspr:null,psqg:0,psqr:0,sqsg:0,sqsr:0},
+  "Japan":{psq:77.8,sqs:83.3,comp:55.6,sow:99.8,ee:100,agile:null,qrst:null,coden:55.6,inspr:null,psqg:14,psqr:4,sqsg:10,sqsr:2},
+  "MLEU NA":{psq:83.1,sqs:85.0,comp:80.0,sow:96.4,ee:null,agile:null,qrst:80,coden:80.0,inspr:88.9,psqg:118,psqr:24,sqsg:136,sqsr:24},
+  "Northern Europe":{psq:81.3,sqs:87.6,comp:74.1,sow:97.7,ee:100,agile:null,qrst:100,coden:74.1,inspr:null,psqg:61,psqr:14,sqsg:78,sqsr:11},
+  "RCGTH NA":{psq:86.1,sqs:82.1,comp:79.7,sow:94.9,ee:90,agile:100,qrst:78.6,coden:79.7,inspr:87.6,psqg:167,psqr:27,sqsg:183,sqsr:40},
+  "Southern Europe & Middle East":{psq:63.0,sqs:79.3,comp:46.7,sow:94.0,ee:66.7,agile:null,qrst:75,coden:46.7,inspr:null,psqg:17,psqr:10,sqsg:23,sqsr:6},
+  "UK&I":{psq:83.0,sqs:79.4,comp:67.6,sow:95.8,ee:100,agile:null,qrst:75,coden:67.6,inspr:87.5,psqg:112,psqr:23,sqsg:139,sqsr:36}
+};
+
+const BY_VERTICAL = {
+  "BFS":{psq:91.5,sqs:83.1,comp:87,sow:99.2,ee:100,agile:50,qrst:null,coden:87,inspr:96.6,psqg:151,psqr:14,sqsg:133,sqsr:27},
+  "COMM":{psq:79.2,sqs:88.9,comp:68,sow:96.2,ee:90.9,agile:50,qrst:72.7,coden:68,inspr:73.8,psqg:76,psqr:20,sqsg:88,sqsr:11},
+  "GVTSECTOR":{psq:80,sqs:100,comp:66.7,sow:97.1,ee:null,agile:null,qrst:null,coden:66.7,inspr:null,psqg:4,psqr:1,sqsg:10,sqsr:0},
+  "HEALTHCARE":{psq:93.3,sqs:90.9,comp:90.5,sow:98.1,ee:100,agile:null,qrst:100,coden:90.5,inspr:79.5,psqg:84,psqr:6,sqsg:70,sqsr:7},
+  "INSURANCE":{psq:88.0,sqs:80.9,comp:81.9,sow:99.2,ee:87.8,agile:null,qrst:80,coden:81.9,inspr:89.3,psqg:234,psqr:32,sqsg:186,sqsr:44},
+  "LSCIENCES":{psq:84.4,sqs:93.3,comp:76.7,sow:98.6,ee:97.0,agile:null,qrst:100,coden:76.7,inspr:null,psqg:173,psqr:32,sqsg:263,sqsr:19},
+  "MLEU":{psq:76.8,sqs:82.1,comp:70.9,sow:96.3,ee:null,agile:null,qrst:69.2,coden:70.9,inspr:92.1,psqg:146,psqr:44,sqsg:206,sqsr:45},
+  "RETAIL":{psq:83.3,sqs:78.3,comp:76.6,sow:94.9,ee:83.3,agile:100,qrst:81.5,coden:76.6,inspr:84.5,psqg:155,psqr:31,sqsg:173,sqsr:48},
+  "T&H":{psq:80.9,sqs:86.4,comp:69.0,sow:95.6,ee:100,agile:null,qrst:100,coden:69.0,inspr:77.9,psqg:55,psqr:13,sqsg:76,sqsr:12},
+  "TECHNOLOGY":{psq:94.6,sqs:90.0,comp:92.3,sow:98.0,ee:null,agile:100,qrst:null,coden:92.3,inspr:null,psqg:35,psqr:2,sqsg:72,sqsr:8}
+};
+
+const BY_BU = {
+  "ASEAN":{psq:87.5,sqs:95.8,comp:83.3,sow:99.6,ee:100,agile:null,qrst:null,coden:83.3,inspr:null,psqg:14,psqr:2,sqsg:23,sqsr:1},
+  "AUSTRALIA":{psq:55.6,sqs:75.9,comp:63.6,sow:97.1,ee:33.3,agile:0,qrst:87.5,coden:63.6,inspr:75,psqg:10,psqr:8,sqsg:22,sqsr:7},
+  "Banking & Capital Markets - NA":{psq:92.5,sqs:81.0,comp:88.9,sow:99.2,ee:100,agile:null,qrst:null,coden:88.9,inspr:null,psqg:74,psqr:6,sqsg:47,sqsr:11},
+  "Belux":{psq:77.8,sqs:80.0,comp:71.4,sow:95.3,ee:null,agile:null,qrst:null,coden:71.4,inspr:null,psqg:14,psqr:4,sqsg:16,sqsr:4},
+  "BFS-UK":{psq:100,sqs:66.7,comp:100,sow:97.7,ee:null,agile:null,qrst:null,coden:100,inspr:97,psqg:13,psqr:0,sqsg:4,sqsr:2},
+  "CG-UK":{psq:50,sqs:56.3,comp:50,sow:87.4,ee:null,agile:null,qrst:50,coden:50,inspr:null,psqg:3,psqr:3,sqsg:9,sqsr:7},
+  "CommsMedia-NA":{psq:80.0,sqs:91.8,comp:68.4,sow:99.3,ee:100,agile:100,qrst:100,coden:68.4,inspr:73.8,psqg:52,psqr:13,sqsg:67,sqsr:6},
+  "CommsMedia-UK":{psq:90.9,sqs:89.5,comp:81.8,sow:97.8,ee:100,agile:null,qrst:60,coden:81.8,inspr:null,psqg:20,psqr:2,sqsg:34,sqsr:4},
+  "Consumer NA":{psq:81.7,sqs:81.9,comp:73.0,sow:96.9,ee:93.3,agile:null,qrst:70,coden:73.0,inspr:77.9,psqg:94,psqr:21,sqsg:118,sqsr:26},
+  "EU-NA":{psq:74.2,sqs:80.5,comp:57.9,sow:99.0,ee:null,agile:null,qrst:null,coden:57.9,inspr:88.9,psqg:23,psqr:8,sqsg:33,sqsr:8},
+  "Financial Services & FinTech - NA":{psq:86.9,sqs:84.7,comp:82.4,sow:99.6,ee:66.7,agile:0,qrst:null,coden:82.4,inspr:95.8,psqg:53,psqr:8,sqsg:61,sqsr:11},
+  "France":{psq:70.6,sqs:85.0,comp:60.0,sow:90.5,ee:66.7,agile:null,qrst:50,coden:60.0,inspr:null,psqg:12,psqr:5,sqsg:17,sqsr:3},
+  "Germany":{psq:79.4,sqs:89.7,comp:70.8,sow:97.2,ee:100,agile:100,qrst:100,coden:70.8,inspr:null,psqg:27,psqr:7,sqsg:35,sqsr:4},
+  "Greater China":{psq:81.3,sqs:83.3,comp:60.0,sow:98.9,ee:66.7,agile:null,qrst:66.7,coden:60.0,inspr:null,psqg:13,psqr:3,sqsg:10,sqsr:2},
+  "India":{psq:80.0,sqs:72.4,comp:85.7,sow:97.6,ee:71.4,agile:null,qrst:0,coden:85.7,inspr:null,psqg:12,psqr:3,sqsg:21,sqsr:8},
+  "Insurance 1":{psq:87.9,sqs:79.7,comp:79.6,sow:99.1,ee:100,agile:null,qrst:100,coden:79.6,inspr:88.8,psqg:87,psqr:12,sqsg:55,sqsr:14},
+  "Insurance 2":{psq:94.3,sqs:88.1,comp:91.2,sow:99.5,ee:90.9,agile:null,qrst:0,coden:91.2,inspr:91.5,psqg:66,psqr:4,sqsg:52,sqsr:7},
+  "Insurance-UK":{psq:83.3,sqs:70.7,comp:55.6,sow:98.7,ee:100,agile:null,qrst:null,coden:55.6,inspr:null,psqg:20,psqr:4,sqsg:29,sqsr:12},
+  "Japan":{psq:77.8,sqs:83.3,comp:55.6,sow:99.8,ee:100,agile:null,qrst:null,coden:55.6,inspr:null,psqg:14,psqr:4,sqsg:10,sqsr:2},
+  "Life Sciences-NA":{psq:82.9,sqs:91.6,comp:74.0,sow:98.6,ee:100,agile:null,qrst:100,coden:74.0,inspr:null,psqg:97,psqr:20,sqsg:175,sqsr:16},
+  "Life Sciences-UK":{psq:95.0,sqs:100,comp:91.7,sow:97.0,ee:100,agile:null,qrst:100,coden:91.7,inspr:null,psqg:19,psqr:1,sqsg:12,sqsr:0},
+  "Middle East":{psq:50.0,sqs:50.0,comp:33.3,sow:99.1,ee:null,agile:null,qrst:null,coden:33.3,inspr:null,psqg:3,psqr:3,sqsg:3,sqsr:3},
+  "MLEU-UK":{psq:75.0,sqs:84.4,comp:42.9,sow:99.5,ee:null,agile:null,qrst:null,coden:42.9,inspr:95.4,psqg:12,psqr:4,sqsg:27,sqsr:5},
+  "ML-NA":{psq:85.6,sqs:86.6,comp:84.6,sow:95.6,ee:null,agile:null,qrst:80,coden:84.6,inspr:null,psqg:95,psqr:16,sqsg:103,sqsr:16},
+  "Netherlands":{psq:81.3,sqs:86.5,comp:74.3,sow:97.8,ee:100,agile:null,qrst:100,coden:74.3,inspr:null,psqg:39,psqr:9,sqsg:32,sqsr:5},
+  "Nordics & Baltics":{psq:88.9,sqs:93.8,comp:80.0,sow:98.1,ee:null,agile:null,qrst:100,coden:80.0,inspr:null,psqg:8,psqr:1,sqsg:30,sqsr:2},
+  "Payer BU":{psq:94.4,sqs:94.1,comp:94.3,sow:98.1,ee:null,agile:null,qrst:100,coden:94.3,inspr:83.0,psqg:68,psqr:4,sqsg:48,sqsr:3},
+  "Provider BU":{psq:100,sqs:87.5,comp:100,sow:98.7,ee:null,agile:null,qrst:null,coden:100,inspr:61.6,psqg:14,psqr:0,sqsg:21,sqsr:3},
+  "Public Sector-UK":{psq:80.0,sqs:100,comp:66.7,sow:100,ee:null,agile:null,qrst:null,coden:66.7,inspr:null,psqg:4,psqr:1,sqsg:1,sqsr:0},
+  "Retail NA":{psq:92.4,sqs:82.3,comp:89.8,sow:92.5,ee:80,agile:100,qrst:100,coden:89.8,inspr:94.1,psqg:73,psqr:6,sqsg:65,sqsr:14},
+  "RT&H-UK":{psq:78.6,sqs:82.4,comp:62.5,sow:84.6,ee:100,agile:null,qrst:100,coden:62.5,inspr:70,psqg:11,psqr:3,sqsg:14,sqsr:3},
+  "Switzerland":{psq:95.7,sqs:92.1,comp:93.8,sow:98.8,ee:100,agile:null,qrst:100,coden:93.8,inspr:null,psqg:22,psqr:1,sqsg:35,sqsr:3},
+  "Technology-NA":{psq:93.8,sqs:82.9,comp:88.9,sow:98.5,ee:null,agile:null,qrst:null,coden:88.9,inspr:null,psqg:15,psqr:1,sqsg:29,sqsr:6},
+  "Technology-UK":{psq:80.0,sqs:75.0,comp:100,sow:67.9,ee:null,agile:null,qrst:null,coden:100,inspr:null,psqg:4,psqr:1,sqsg:6,sqsr:2},
+  "Transport-UK":{psq:60.0,sqs:75.0,comp:33.3,sow:100,ee:null,agile:null,qrst:null,coden:33.3,inspr:null,psqg:6,psqr:4,sqsg:3,sqsr:1}
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function fmt(v, sfx='%', dec=1) {
+  if (v === null || v === undefined || v === '' || isNaN(v)) return '<span class="na">N/A</span>';
+  return parseFloat(v).toFixed(dec) + sfx;
+}
+function fmtN(v) {
+  if (v === null || v === undefined || isNaN(v) || v === 0) return '<span class="na">–</span>';
+  return parseInt(v).toLocaleString();
+}
+function pct(v) { return (v === null || v === undefined || isNaN(v)) ? 0 : Math.min(100, Math.max(0, parseFloat(v))); }
+function statusPill(v, threshG=85, threshA=70) {
+  if (v === null || v === undefined || isNaN(v)) return '<span class="pill a">N/A</span>';
+  if (v >= threshG) return '<span class="pill g">Good</span>';
+  if (v >= threshA) return '<span class="pill a">Monitor</span>';
+  return '<span class="pill r">At Risk</span>';
+}
+function colorClass(v, threshG=85, threshA=70) {
+  if (v === null || v === undefined || isNaN(v)) return 'var(--muted)';
+  if (v >= threshG) return 'var(--green)';
+  if (v >= threshA) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+// ── GET CURRENT DATA ──────────────────────────────────────────────────────────
+function getData() {
+  const bu  = document.getElementById('buSl').value;
+  const mkt = document.getElementById('mktSl').value;
+  const vrt = document.getElementById('vertSl').value;
+
+  // Priority: BU > Market > Vertical > All
+  if (bu  && BY_BU[bu])       return BY_BU[bu];
+  if (mkt && BY_MARKET[mkt])  return BY_MARKET[mkt];
+  if (vrt && BY_VERTICAL[vrt]) return BY_VERTICAL[vrt];
+  return ALL;
+}
+
+// ── UPDATE FILTER BAR ─────────────────────────────────────────────────────────
+function updateFilterBar() {
+  const mkt = document.getElementById('mktSl').value;
+  const vrt = document.getElementById('vertSl').value;
+  const bu  = document.getElementById('buSl').value;
+  const sl  = document.getElementById('slSl').value;
+  const view = document.getElementById('viewSl').value;
+
+  const chips = [];
+  if (view !== 'all') chips.push(viewMap[view] || view);
+  if (mkt)  chips.push('Market: ' + mkt);
+  if (vrt)  chips.push('Vertical: ' + vrt);
+  if (bu)   chips.push('BU: ' + bu);
+  if (sl)   chips.push('SL: ' + sl);
+
+  const bar = document.getElementById('fbar');
+  const cc  = document.getElementById('fchips');
+  if (chips.length) {
+    bar.classList.remove('hidden');
+    cc.innerHTML = chips.map(c=>`<span class="fchip">⬡ ${c}</span>`).join('');
+  } else {
+    bar.classList.add('hidden');
+  }
+
+  // Describe active filter in header
+  const lbl = bu ? bu : (mkt ? mkt : (vrt ? vrt : 'Global Portfolio'));
+  document.getElementById('filterLblHdr').textContent = lbl !== 'Global Portfolio' ? '📍 ' + lbl : '';
+}
+
+// ── RENDER ALL METRICS ────────────────────────────────────────────────────────
+function renderAll() {
+  const d = getData();
+  updateFilterBar();
+
+  // Header badges
+  document.getElementById('hbComposite').textContent = (d.comp !== null && !isNaN(d.comp)) ? d.comp.toFixed(1)+'%' : 'N/A';
+  document.getElementById('hbSOW').textContent = (d.sow !== null && !isNaN(d.sow)) ? d.sow.toFixed(1)+'%' : 'N/A';
+  document.getElementById('hbPSQ').textContent = (d.psq !== null && !isNaN(d.psq)) ? d.psq.toFixed(1)+'%' : 'N/A';
+
+  // ── Generic view ──
+  setCard('c-psq',  'd', d.psq,   'p-psq');
+  setCard('c-sqs',  'd', d.sqs,   'p-sqs');
+  setCard('c-ee',   'd', d.ee,    'p-ee');
+  setCard('c-agile','d', d.agile, 'p-agile');
+  setCard('c-comp', 'd', d.comp,  'p-comp');
+  setCard('c-qrst', 'd', d.qrst);
+  setText('c-psqg', fmtN(d.psqg));
+  setText('c-psqr', fmtN(d.psqr));
+  setText('c-sqsg', fmtN(d.sqsg));
+  // SOW in delivery sub-grid
+  setCard('d-sow', 'd', d.sow, 'dp-sow');
+
+  // Scorecard table
+  renderTable(d);
+
+  // ── Quality view ──
+  setCard('q-psq',  'd', d.psq,   'qp-psq');
+  setCard('q-sqs',  'd', d.sqs,   'qp-sqs');
+  setCard('q-ee',   'd', d.ee,    'qp-ee');
+  setCard('q-agile','d', d.agile, 'qp-agile');
+  setText('q-psqg', fmtN(d.psqg)); setText('q-psqr', fmtN(d.psqr));
+  setText('q-sqsg', fmtN(d.sqsg)); setText('q-sqsr', fmtN(d.sqsr));
+  setHBar('qhb-psq','qhv-psq',d.psq);
+  setHBar('qhb-sqs','qhv-sqs',d.sqs);
+  setHBar('qhb-ee','qhv-ee',d.ee);
+  setHBar('qhb-agile','qhv-agile',d.agile);
+  setHBar('qhb-qrst','qhv-qrst',d.qrst);
+
+  // ── Delivery view ──
+  setCard('dv-sow',  'd', d.sow,   'dvp-sow');
+  setCard('dv-inspr','d', d.inspr, 'dvp-inspr');
+  setCard('dv-coden','d', d.coden, 'dvp-coden');
+  setCard('dv-qrst', 'd', d.qrst,  'dvp-qrst');
+
+  // ── Customer view ──
+  setCard('cv-sow', 'd', d.sow, 'cvp-sow');
+
+  // ── Engineering view ──
+  setCard('ev-ee',   'd', d.ee,    'evp-ee');
+  setCard('ev-agile','d', d.agile, 'evp-agile');
+  setCard('ev-inspr','d', d.inspr, 'evp-inspr');
+  setCard('ev-coden','d', d.coden, 'evp-coden');
+  setHBar('ehb-ee','ehv-ee',d.ee);
+  setHBar('ehb-inspr','ehv-inspr',d.inspr);
+  setHBar('ehb-coden','ehv-coden',d.coden);
+  setHBar('ehb-qrst','ehv-qrst',d.qrst);
+  setHBar('ehb-agile','ehv-agile',d.agile);
+}
+
+function setCard(valId, type, val, progId) {
+  const el = document.getElementById(valId);
+  if (!el) return;
+  const n = (val !== null && val !== undefined && !isNaN(val)) ? parseFloat(val) : null;
+  el.innerHTML = n !== null ? n.toFixed(1)+'<span class="u">%</span>' : '<span class="na">N/A</span>';
+  el.style.color = n !== null ? colorClass(n) : 'var(--muted)';
+  if (progId) {
+    const p = document.getElementById(progId);
+    if (p) p.style.width = pct(n) + '%';
+  }
+}
+function setText(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+function setHBar(barId, valId, val) {
+  const b = document.getElementById(barId);
+  const v = document.getElementById(valId);
+  const n = (val !== null && val !== undefined && !isNaN(val)) ? parseFloat(val) : null;
+  if (b) b.style.width = pct(n) + '%';
+  if (v) v.textContent = n !== null ? n.toFixed(1)+'%' : 'N/A';
+}
+
+function renderTable(d) {
+  const rows = [
+    {name:'PSQ Score',cat:'Quality',val:d.psq,sfx:'%',thG:85,thA:70},
+    {name:'SQS Score',cat:'Quality',val:d.sqs,sfx:'%',thG:85,thA:70},
+    {name:'Composite Score',cat:'Overall',val:d.comp,sfx:'%',thG:80,thA:65},
+    {name:'EE Score',cat:'Engineering',val:d.ee,sfx:'%',thG:85,thA:70},
+    {name:'Agile Maturity',cat:'Engineering',val:d.agile,sfx:'%',thG:80,thA:60},
+    {name:'QRST Score',cat:'Quality',val:d.qrst,sfx:'%',thG:80,thA:65},
+    {name:'Codenizant Score',cat:'Engineering',val:d.coden,sfx:'%',thG:80,thA:65},
+    {name:'InSprint Automation',cat:'Engineering',val:d.inspr,sfx:'%',thG:80,thA:65},
+    {name:'SOW Fulfillment',cat:'Delivery',val:d.sow,sfx:'%',thG:95,thA:85},
+    {name:'MSA Fulfillment (YTD)',cat:'Contracts',val:98.97,sfx:'%',thG:95,thA:85},
+    {name:'DA Coverage',cat:'Delivery Assurance',val:89.19,sfx:'%',thG:95,thA:80},
+    {name:'DA Risk Remediation',cat:'Delivery Assurance',val:39.09,sfx:'%',thG:70,thA:40},
+    {name:'Critical Closure %',cat:'Compliance',val:89.2,sfx:'%',thG:95,thA:80},
+    {name:'PCSAT Score (/ 5)',cat:'Customer',val:4.68*20,sfx:'%',thG:85,thA:70},
+    {name:'PCSAT Response Rate',cat:'Customer',val:61.43,sfx:'%',thG:60,thA:50},
+    {name:'PCSAT Remediation',cat:'Customer',val:98.68,sfx:'%',thG:95,thA:80},
+  ];
+  const tbody = document.getElementById('scoreTableBody');
+  tbody.innerHTML = rows.map(r => {
+    const n = (r.val !== null && r.val !== undefined && !isNaN(r.val)) ? parseFloat(r.val) : null;
+    // For PCSAT Score row, display as 4.68/5 instead of pct
+    const isPCSAT = r.name === 'PCSAT Score (/ 5)';
+    const disp = n !== null ? (isPCSAT ? '4.68/5' : n.toFixed(1)+r.sfx) : 'N/A';
+    const w = pct(n);
+    const col = n !== null ? colorClass(n, r.thG, r.thA) : 'var(--muted)';
+    return `<tr>
+      <td>${r.name}</td><td style="color:var(--muted)">${r.cat}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600;color:${col}">${disp}</td>
+      <td><div class="sbar"><div class="sbar-t"><div class="sbar-f" style="width:${w}%;background:${col}"></div></div><span style="font-size:10px;color:var(--muted);width:36px">${n !== null ? Math.round(n)+'%' : ''}</span></div></td>
+      <td>${statusPill(n, r.thG, r.thA)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── VIEW SWITCHER ─────────────────────────────────────────────────────────────
+const viewMap = {all:'Generic (All)',quality:'Quality',delivery:'Delivery & SLA',customer:'Customer',compliance:'Compliance',engineering:'Engineering'};
+function applyView() {
+  const v = document.getElementById('viewSl').value;
+  document.querySelectorAll('.view-block').forEach(b => b.style.display = 'none');
+  const t = document.getElementById('v-' + v);
+  if (t) t.style.display = 'block';
+  document.getElementById('viewLbl').textContent = viewMap[v] || v;
+}
+
+// ── PAGE SWITCH ───────────────────────────────────────────────────────────────
+function switchPage(n) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page'+n).classList.add('active');
+  document.querySelectorAll('.page-tab')[n-1].classList.add('active');
+}
+
+// ── CLEAR FILTERS ─────────────────────────────────────────────────────────────
+function clearFilters() {
+  ['mktSl','vertSl','buSl','slSl'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('viewSl').value = 'all';
+  applyView();
+  renderAll();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+applyView();
+renderAll();
+</script>
+</body>
+</html>
